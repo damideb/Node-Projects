@@ -50,7 +50,7 @@ showTasks()
 
 tasksDOM.addEventListener('click', async (e) => {
   const el = e.target
-  if (el.parentElement.classList.contains('delete-btn')) {
+  if (el.parentElement.classList.contains('delete-btn')) { // checks if the parent element has the delete-btn class when any element is clicked on
     loadingDOM.style.visibility = 'visible'
     const id = el.parentElement.dataset.id
     try {
