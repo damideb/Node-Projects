@@ -1,5 +1,6 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -17,14 +18,29 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a password"],
     minlength: 6,
-  }
+  },
 });
 
-UserSchema.pre('save', async function(){
-    const salt = await bcrypt.genSalt(10)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
+// this middleware run s before a new document is created
+UserSchema.pre("save", async function () {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
-})
+//Creates a method on the document instance
+UserSchema.methods.createJWT = function () {
+  return jwt.sign(
+    { userId: this._id, name: this.name },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_LIFETIME,
+    }
+  );
+};
 
-module.exports = mongoose.model("User", UserSchema)
+UserSchema.methods.comparePassword = async function (userPassword){
+    const isMatch = await bcrypt.compare(userPassword, this.password)
+    return isMatch
+}
+
+module.exports = mongoose.model("User", UserSchema);
